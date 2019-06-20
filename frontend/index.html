@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TaskCal</title>
+    <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue_grey-indigo.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+      body {
+        padding: 20px;
+        max-width: 600px;
+        box-sizing: border-box;
+      }
+
+      form {
+        padding: 16px 24px;
+      }
+
+      form input {
+        width: 100%;
+      }
+
+      .done {
+        text-decoration: line-through;
+      }
+
+      @keyframes highlight {
+        from {
+          background-color: #ff6;
+        }
+        to {
+          background-color: transparent;
+        }
+      }
+
+      .highlighted {
+        animation-name: highlight;
+        animation-duration: 0.5s;
+        animation-delay: 3s;
+        animation-fill-mode: backwards;
+      }
+    </style>
+  </head>
+
+  <body>
+    <form
+      id="form"
+      action=""
+      method="POST"
+      class="mdl-shadow--2dp"
+      v-on:submit.prevent="createTask"
+    >
+      <div>
+        <div class="mdl-textfield mdl-js-textfield" style="width: 100%">
+          <input type="text" name="title" class="mdl-textfield__input" />
+          <label class="mdl-textfield__label">Title</label>
+        </div>
+      </div>
+      <div>
+        <div class="mdl-textfield mdl-js-textfield" style="width: 100%">
+          <textarea name="description" class="mdl-textfield__input" rows="5"></textarea>
+          <label class="mdl-textfield__label">Description</label>
+        </div>
+      </div>
+      <div>
+        <select name="minutes">
+          <option>30</option>
+          <option selected>60</option>
+          <option>120</option>
+        </select>
+        min
+      </div>
+      <div style="margin-top: 16px; text-align: right">
+        <button type="submit" class="mdl-button mdl-js-button mdl-button--primary">
+          {{ isSubmitting ? "Creating" : "Create task" }}
+          <div
+            v-show="isSubmitting"
+            class="mdl-spinner mdl-js-spinner is-active"
+            style="width: 16px; height: 16px; margin-left: 4px; vertical-align: text-bottom"
+          ></div>
+        </button>
+      </div>
+    </form>
+
+    <div id="tasks" class="mdl-list" style="margin-top: 16px">
+      <button
+        v-on:click="loadPast()"
+        v-if="tasks.length"
+        class="mdl-button mdl-js-button"
+        style="width: 100%"
+        v-bind:disabled="loading"
+      >
+        Older ({{ toDate(startEpochMillis) }}-{{ toDate(endEpochMillis) }})
+        <div
+          v-show="loading=='past'"
+          class="mdl-spinner mdl-js-spinner is-active"
+          style="width: 16px; height: 16px; margin-left: 4px; vertical-align: text-bottom"
+        ></div>
+      </button>
+
+      <div v-for="task in withDates(tasks)" v-bind:class="{ done: task.done }">
+        <div class="mdl-list__item" v-if="task.isDate">
+          <span class="mdl-typography--title">{{ task.date }}</span>
+        </div>
+        <div
+          class="mdl-list__item mdl-list__item--two-line"
+          v-bind:id="'event-' + task.eventId"
+          v-bind:class="{ highlighted: selectedEventId == task.eventId }"
+          v-else
+        >
+          <label
+            class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect"
+            style="display: inline; width: auto; margin-right: 8px"
+          >
+            <input
+              class="mdl-checkbox__input"
+              type="checkbox"
+              v-bind:checked="task.done"
+              v-on:click="onToggleTask(task, $event)"
+            />
+          </label>
+          <span class="mdl-list__item-primary-content">
+            <a v-bind:href="eventPermalink(task)" target="_blank">{{ task.title }}</a>
+            <span class="mdl-list__item-sub-title">{{ toDateTime(task.startEpochMillis) }}</span>
+          </span>
+          <span class="mdl-list__item-secondary-action">
+            <button
+              v-if="!task.done"
+              class="mdl-button mdl-js-button mdl-button--icon"
+              title="Reschedule"
+              v-on:click="onReschedule(task)"
+            >
+              <i class="material-icons">schedule</i>
+            </button>
+          </span>
+        </div>
+      </div>
+
+      <button
+        v-on:click="loadFuture()"
+        v-if="tasks.length"
+        type="submit"
+        class="mdl-button mdl-js-button"
+        style="width: 100%"
+      >
+        Newer ({{ toDate(startEpochMillis) }}-{{ toDate(endEpochMillis) }})
+        <div
+          v-show="loading=='future'"
+          class="mdl-spinner mdl-js-spinner is-active"
+          style="width: 16px; height: 16px; margin-left: 4px; vertical-align: text-bottom"
+          v-bind:disabled="loading"
+        ></div>
+      </button>
+    </div>
+
+    <div id="snackbar" class="mdl-js-snackbar mdl-snackbar">
+      <div class="mdl-snackbar__text"></div>
+      <button class="mdl-snackbar__action" type="button"></button>
+    </div>
+  </body>
+</html>
