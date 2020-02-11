@@ -14,7 +14,7 @@
     "typescript": "3.4",
     "webpack": "^4.35.0",
     "webpack-cdn-plugin": "^3.1.4",
-    "webpack-cli": "^3.3.4"
+    "webpack-cli": "^3.3.11"
   },
   "scripts": {
     "build": "webpack",
