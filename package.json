@@ -13,7 +13,7 @@
     "ts-loader": "^6.0.3",
     "typescript": "3.4",
     "webpack": "^4.35.0",
-    "webpack-cdn-plugin": "^3.1.4",
+    "webpack-cdn-plugin": "^3.3.1",
     "webpack-cli": "^3.3.4"
   },
   "scripts": {
